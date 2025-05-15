@@ -14,7 +14,6 @@
 
 <a href=""><img src='https://img.shields.io/badge/arXiv-Prior Depth Anything-red' alt='Paper PDF'></a>
 <a href='https://prior-depth-anything.github.io/'><img src='https://img.shields.io/badge/Project_Page-Prior Depth Anything-green' alt='Project Page'></a>
-<a href='https://huggingface.co/Rain729/Prior-Depth-Anything'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue'></a>
 </div>
 
 This work presents Prior Depth Anything, a framework that combines incomplete but precise metric information in depth measurement with relative but complete geometric structures in depth prediction, generating accurate, dense, and detailed metric depth maps for any scene
