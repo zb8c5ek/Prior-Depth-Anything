@@ -12,7 +12,7 @@
 </div>
 <br>
 
-<a href="https://arxiv.org/pdf/2505.10565"><img src='https://img.shields.io/badge/arXiv-Prior Depth Anything-red' alt='Paper PDF'></a>
+<a href="https://arxiv.org/abs/2505.10565"><img src='https://img.shields.io/badge/arXiv-Prior Depth Anything-red' alt='Paper PDF'></a>
 <a href='https://prior-depth-anything.github.io/'><img src='https://img.shields.io/badge/Project_Page-Prior Depth Anything-green' alt='Project Page'></a>
 </div>
 
