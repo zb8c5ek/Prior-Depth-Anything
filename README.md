@@ -3,7 +3,7 @@
 
 [**Zehan Wang**](https://zehanwang01.github.io/)<sup>1*</sup> · [**Siyu Chen**]()<sup>1*</sup> · [**Lihe Yang**](https://liheyoung.github.io/)<sup>2</sup>
 <br>
-[**Jialei Wang**]()<sup>1</sup> · [**Ziang Zhang**]("https://scholar.google.com/citations?user=DptGMnYAAAAJ&hl=en&oi=ao")<sup>1</sup> · [**Hengshuang Zhao**](https://hszhao.github.io/)<sup>2</sup> · [**Zhou Zhao**]("https://mypage.zju.edu.cn/zhaozhou")<sup>1</sup>
+[**Jialei Wang**]()<sup>1</sup> · [**Ziang Zhang**](https://scholar.google.com/citations?user=DptGMnYAAAAJ&hl=en&oi=ao)<sup>1</sup> · [**Hengshuang Zhao**](https://hszhao.github.io/)<sup>2</sup> · [**Zhou Zhao**](https://mypage.zju.edu.cn/zhaozhou)<sup>1</sup>
 
 <sup>1</sup>ZJU&emsp;&emsp;&emsp;<sup>2</sup>HKU
 <br>
@@ -173,10 +173,13 @@ We would like to express our sincere gratitude to the following excellent works:
 If you find this project useful, please consider citing:
 
 ```bibtex
-@article{prior_depth_anything,
-  title={Depth Anything with Any Prior},
-  author={Zehan Wang, Siyu Chen, Lihe Yang, Jialei Wang, Ziang Zhang, Hengshuang Zhao, Zhou Zhao},
-  journal={},
-  year={2025}
+@misc{wang2025depthprior,
+      title={Depth Anything with Any Prior}, 
+      author={Zehan Wang and Siyu Chen and Lihe Yang and Jialei Wang and Ziang Zhang and Hengshuang Zhao and Zhou Zhao},
+      year={2025},
+      eprint={2505.10565},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2505.10565}, 
 }
 ```
