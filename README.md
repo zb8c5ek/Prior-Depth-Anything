@@ -31,11 +31,11 @@ We provide two model [**checkpoints**](https://huggingface.co/Rain729/Prior-Dept
 First, clone this repository and create environment with `python=3.9`.
 ```bash
 git clone https://github.com/SpatialVision/Prior-Depth-Anything
+cd Prior-Depth-Anything
 conda create -n priorda python=3.9
 conda activate priorda
-cd Prior-Depth-Anything
 ```
-Then, install the dependencies with:
+Then, install the dependencies with the following command. If you encounter the issue that the installed `torch_cluster` is not for CUDA, please install `torch_cluster==1.6.3 -f https://pytorch-geometric.com/whl/torch-2.2.2+cu121.html` instead to download the gpu version. (refer to [this issue](https://github.com/SpatialVision/Prior-Depth-Anything/issues/2)).
 ```bash
 pip install -r requirements.txt
 ```
@@ -82,7 +82,7 @@ output = priorda.infer_one_sample(image=image_path, prior=prior_path, visualize=
 </details>  
 
 ### Coarse-only estimation.
-To facilitate further research, we offer an interface to the first-stage 'coarse alignment' process. You can generate the coarse-aligned depth map by simply configuring the `coarse_only` option. e.g.
+To facilitate further research, we offer an interface to the first-stage 'coarse alignment' process. You can generate the coarse-aligned depth map by simply configuring the `coarse_only` option. For example:
 ```python
 priorda = PriorDepthAnything(device=device, coarse_only=True)
 ```

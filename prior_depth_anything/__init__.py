@@ -56,7 +56,7 @@ class PriorDepthAnything(nn.Module):
         # Initialize Frozon-MDE.
         self.completion = DepthCompletion.build(args=self.args, fmde_path=fmde_path, device=device)
         
-        ## conditioned MDE loading.
+        ## Conditioned MDE loading.
         if not coarse_only:
             if self.args.conditioned_model_size in ['vitl', 'vitg']:
                 raise ValueError(f'{self.args.conditioned_model_size} coming soon...')

@@ -284,7 +284,7 @@ class SparseSampler:
             
         else:
             raise NotImplementedError((
-                "'pattern' should be in format of ['^LiDAR_\d+$', 'sift', 'orb', '^cubic_\d+$', " 
+                "'pattern' should be in format of ['^LiDAR_\d+$', 'sift', 'orb', '^cubic_\d+$', '^distance_\d+_\d+$'," 
                 "'^downscale_\d*$', '(int)'], but the provided 'pattern' is -- '{}'".format(pattern)
             ))
         
