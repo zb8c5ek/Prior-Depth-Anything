@@ -35,7 +35,7 @@ cd Prior-Depth-Anything
 conda create -n priorda python=3.9
 conda activate priorda
 ```
-Then, install the dependencies with the following command. If you encounter the issue that the installed `torch_cluster` is not for CUDA, please install `torch_cluster==1.6.3 -f https://pytorch-geometric.com/whl/torch-2.2.2+cu121.html` instead to download the gpu version. (refer to [this issue](https://github.com/SpatialVision/Prior-Depth-Anything/issues/2)).
+Then, install the dependencies with the following command. If you encounter the issue that the installed `torch_cluster` is not for CUDA, please install `torch_cluster==1.6.3 -f https://pytorch-geometric.com/whl/torch-2.2.2+cu121.html` instead to download the gpu version (refer to [this issue](https://github.com/SpatialVision/Prior-Depth-Anything/issues/2)).
 ```bash
 pip install -r requirements.txt
 ```
