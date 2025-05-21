@@ -91,7 +91,7 @@ To facilitate further research, we offer an interface to the first-stage 'coarse
 priorda = PriorDepthAnything(device=device, coarse_only=True)
 ```
 ### Geometric Depth
-We provide two ways that allow you utilize geometric information from other depth estimation models.  
+We provide two ways that allow you to utilize geometric information from other depth estimation models.  
 1. Replace the depth estimation model in the coarse stage [here](./prior_depth_anything/depth_completion.py#L165).
 2. Just input the geometric depth to `infer_one_sample()` by specify `geometric` (refer to [Inference Configurations](#inference-configurations)). With CLI, you should add the item `--geometric_path assets/sample-1/geo_depth.npy`. 
 
