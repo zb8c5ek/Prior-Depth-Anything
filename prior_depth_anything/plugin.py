@@ -18,8 +18,8 @@ class PriorDARefinerMetrics:
         """Compute metrics for 'pred' compared to 'gt'
 
         Args:
-            gt (numpy.ndarray): Ground truth values
-            pred (numpy.ndarray): Predicted values
+            gt (torch.Tensor): Ground truth values
+            pred (torch.Tensor): Predicted values
 
             gt.shape should be equal to pred.shape
 
@@ -172,7 +172,7 @@ class PriorDARefiner(PriorDepthAnything):
         refineds_with_diff_mode = []
         for md in keep_mode:
             prior = self.filter_noisy_depth[md](image, depth_map, confidence, thres)
-            refined = self.infer_one_sample(image=image, prior=prior)
+            refined = self.infer_one_sample(image=image, prior=prior, geometric=None)
             refineds_with_diff_mode.append(refined)
             
         refined_depth = torch.stack(refineds_with_diff_mode, dim=-1).mean(dim=-1)

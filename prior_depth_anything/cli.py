@@ -40,8 +40,12 @@ def create_and_execute():
         help="Path of Prior depth. e.g. assets/sample-1/gt_depth.png")
     
     test_parser.add_argument(
+        "--geometric_path", default=None, type=str,
+        help="(Optional) Path of geometric depth. e.g. asserts/sample-1/geo_depth.npy")
+    
+    test_parser.add_argument(
         "--pattern", default=None, type=str,
-        help="Pattern for sampling sparse depth points additionally in `prior`. If None, the prior depth is used.")
+        help="(Optional) Pattern for sampling sparse depth points additionally in `prior`. If None, the prior depth is used.")
     
     test_parser.add_argument(
         "--visualize", type=int, default=1, 
@@ -67,7 +71,11 @@ def test(args):
         Shape should be [H, W, 3] with values in the range [0, 255].
 
     prior: 
-        The path of the prior depth (e.g., '*.png') or a tensor/array representing the depth.
+        The path of the prior depth (e.g., '*.png') or a tensor/array representing the prior depth.
+        Shape should be [H, W] with type float32.
+        
+    geometric (optional): 
+        The path of the geometric depth (e.g., '*.png') or a tensor/array representing the geometric depth.
         Shape should be [H, W] with type float32.
 
     pattern (optional): 
@@ -76,6 +84,7 @@ def test(args):
     output = priorda.infer_one_sample(
         image=args.image_path, 
         prior=args.prior_path, 
+        geometric=args.geometric_path,
         pattern=args.pattern, 
         visualize=args.visualize
     )

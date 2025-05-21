@@ -95,13 +95,14 @@ class PriorDepthAnything(nn.Module):
         model = model.to(device)
         return model
         
-    def forward(self, images, sparse_depths, sparse_masks, cover_masks=None, prior_depths=None, pattern=None):
+    def forward(self, images, sparse_depths, sparse_masks, cover_masks=None, prior_depths=None, geometric_depths=None, pattern=None):
         """ To facilitate further research, we batchify the forward process. """
         ##### Coarse stage. #####
         completed_maps = self.completion(
             images=images, sparse_depths=sparse_depths, 
             sparse_masks=sparse_masks, cover_masks=cover_masks, 
-            prior_depths=prior_depths, pattern=pattern
+            prior_depths=prior_depths, pattern=pattern,
+            geometric_depths=geometric_depths
         )
         
         # knn-aligned depths
@@ -216,6 +217,7 @@ class PriorDepthAnything(nn.Module):
     def infer_one_sample(self, 
         image: Union[str, torch.Tensor, np.ndarray] = None, 
         prior: Union[str, torch.Tensor, np.ndarray] = None, 
+        geometric: Union[str, torch.Tensor, np.ndarray] = None,
         pattern: str = None, double_global=False, 
         prior_cover=False, visualize=False
     ) -> torch.Tensor:
@@ -227,7 +229,10 @@ class PriorDepthAnything(nn.Module):
                 2. Image path of RGB
             prior:
                 1. Prior depth in 'np.ndarray' or 'torch.Tensor' [H, W]
-                2. Path of depth map.
+                2. Path of prior depth map. (with scale)
+            geometric:
+                1. Geometric depth in 'np.ndarray' or 'torch.Tensor' [H, W]
+                2. Path of geometric depth map. (with geometry)
             pattern: The mode of prior-based additional sampling. It could be None.
             double_global: Whether to condition with two estimated depths or estimated + knn-map.
             prior_cover: Whether to keep all prior areas in knn-map, it functions when 'pattern' is not None.
@@ -261,12 +266,13 @@ class PriorDepthAnything(nn.Module):
         # We implement preprocess with batch size of 1, but our model works for multi-images naturally.
         data = self.sampler(
             image=image, prior=prior,
+            geometric=geometric,
             pattern=pattern, K=self.args.K,
             prior_cover=prior_cover
         )
         rgb, prior_depth, sparse_depth = data['rgb'], data['prior_depth'], data['sparse_depth'] # Shape: [B, C, H, W]
         cover_mask, sparse_mask = data['cover_mask'], data['sparse_mask'] # Shape: [B, 1, H, W]
-        
+        geometric_depth = data['geometric_depth'] if geometric is not None else None
         if (sparse_mask.view(sparse_mask.shape[0], -1).sum(dim=1) < self.args.K).any():
             raise ValueError("There are not enough known points in at least one of samples")
 
@@ -274,7 +280,8 @@ class PriorDepthAnything(nn.Module):
         """ If you want to input multiple samples at once, just stack samples at dim=0, s.t. [B, C, H, W] """
         pred_depth = self.forward(
             images=rgb, sparse_depths=sparse_depth, prior_depths=prior_depth,
-            sparse_masks=sparse_mask, cover_masks=cover_mask, pattern=pattern
+            sparse_masks=sparse_mask, cover_masks=cover_mask, pattern=pattern,
+            geometric_depths=geometric_depth
         ) # (B, 1, H, W)
         
         ### Visualize the results.

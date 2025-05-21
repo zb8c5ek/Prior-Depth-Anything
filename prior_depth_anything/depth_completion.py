@@ -34,17 +34,19 @@ class DepthCompletion(torch.nn.Module):
         else:
             self.device = torch.device('cpu')
         
-    def unify_format(self, images, sparse_depths, sparse_masks, cover_masks, prior_depths):
+    def unify_format(self, images, sparse_depths, sparse_masks, cover_masks, prior_depths, geometric_depths):
         # Tune the shape of the tensors.
         if images.max() <= 1: images = (images * 255)
         if images.dtype != torch.uint8: images = images.to(torch.uint8)
         if len(sparse_depths.shape) == 4: 
             sparse_depths = sparse_depths.squeeze(dim=1)
-        if len(prior_depths.shape) == 4:
-            prior_depths = prior_depths.squeeze(dim=1)
-            
-        if sparse_masks is not None and len(sparse_masks.shape) == 4:
+        if len(sparse_masks.shape) == 4:
             sparse_masks = sparse_masks.squeeze(dim=1)
+        
+        if prior_depths is not None and len(prior_depths.shape) == 4:
+            prior_depths = prior_depths.squeeze(dim=1)
+        if geometric_depths is not None and len(geometric_depths.shape) == 4:
+            geometric_depths = geometric_depths.squeeze(dim=1)
         if cover_masks is not None and len(cover_masks.shape) == 4:
             cover_masks = cover_masks.squeeze(dim=1)
             
@@ -52,24 +54,28 @@ class DepthCompletion(torch.nn.Module):
         images = images.to(self.device)
         sparse_depths, sparse_masks = sparse_depths.to(self.device), sparse_masks.to(self.device)
         
-        return images, sparse_depths, sparse_masks, cover_masks, prior_depths
+        return images, sparse_depths, sparse_masks, cover_masks, prior_depths, geometric_depths
     
     @torch.no_grad()
-    def preprocess(self, images: torch.Tensor, sparse_depths: torch.Tensor, 
-                sparse_masks: torch.Tensor = None, cover_masks=None, prior_depths=None):
+    def preprocess(self, images: torch.Tensor, sparse_depths: torch.Tensor, sparse_masks: torch.Tensor, 
+                   cover_masks=None, prior_depths=None, geometric_depths=None):
         """
         1. Unify the format of all the inputs.
         2. Obtain the model-predicted affine-invariant depth map.
         3. Convert the ground-truth depth to disparity.
         """
-        int_images, sparse_depths, sparse_masks, cover_masks, prior_depths = self.unify_format(
-            images, sparse_depths, sparse_masks, cover_masks, prior_depths)
+        int_images, sparse_depths, sparse_masks, cover_masks, prior_depths, geometric_depths = self.unify_format(
+            images, sparse_depths, sparse_masks, cover_masks, prior_depths, geometric_depths)
         
         # Preprocess pred_disparities.
-        # heit = sparse_depths.shape[-2] // 14 * 14
-        heit = 518
-        pred_disparities = self.depth_model(int_images, heit, device=self.device)
-        pred_disparities = pred_disparities.squeeze(1)
+        if geometric_depths is not None:
+            warnings.warn("The geometric depth is provided by the user. ")
+            pred_disparities = depth2disparity(geometric_depths)
+        else:
+            # heit = sparse_depths.shape[-2] // 14 * 14
+            heit = 518
+            pred_disparities = self.depth_model(int_images, heit, device=self.device)
+            pred_disparities = pred_disparities.squeeze(1)
             
         # Preprocess sparse_depths and prior depths.
         sparse_disparities = depth2disparity(sparse_depths)
@@ -78,8 +84,8 @@ class DepthCompletion(torch.nn.Module):
         return pred_disparities, sparse_disparities, sparse_masks, cover_masks, prior_disparities
         
     @torch.no_grad()
-    def forward(self, images: torch.Tensor, sparse_depths: torch.Tensor,
-            sparse_masks: torch.Tensor, cover_masks=None, prior_depths=None, pattern=None
+    def forward(self, images: torch.Tensor, sparse_depths: torch.Tensor, sparse_masks: torch.Tensor, 
+            cover_masks=None, prior_depths=None, geometric_depths=None, pattern=None
         ) -> Dict[str, torch.Tensor]:
         """
         Processe input images and sparse depth information to produce completed depth maps.
@@ -101,7 +107,7 @@ class DepthCompletion(torch.nn.Module):
         """
         
         pred_disparities, sparse_disparities, sparse_masks, cover_masks, prior_disparities = self.preprocess(
-            images, sparse_depths, sparse_masks, cover_masks, prior_depths
+            images, sparse_depths, sparse_masks, cover_masks, prior_depths, geometric_depths
         )
         
         output = {}
@@ -131,7 +137,7 @@ class DepthCompletion(torch.nn.Module):
                 complete_masks=complete_masks,
             )
             
-        """ Notes: The sparse points have been covered in the predictor. """
+        """ Notes: The sparse points have been covered in the ss-/kss-completer. """
         if cover_masks.sum() > 0:
             # To cover the large areas that have been known.
             scaled_preds[cover_masks] = prior_disparities[cover_masks]
@@ -139,6 +145,7 @@ class DepthCompletion(torch.nn.Module):
             warnings.warn("The depth prior is directly provided by the user. All the known points will cover the knn-scaled map.")
         else:
             assert not re.fullmatch(r'^cubic_\d+$', pattern)
+            assert not re.fullmatch(r'^distance_\d+_\d+$', pattern)
         output['scaled_preds'] = scaled_preds
         
         # ================================== Process the Uncertainty map.
@@ -156,7 +163,7 @@ class DepthCompletion(torch.nn.Module):
         return output
         
     def init_depth_model(self, fmde_path):
-        """ We only implement @depth-anything-v2 here, you can replace it with other depth estimation model. """
+        """ We only implement @depth-anything-v2 here, you can replace it with other depth estimation models. """
         from .depth_anything_v2 import build_backbone
         depth_model = build_backbone(depth_size=self.args.frozen_model_size, model_path=fmde_path).to(self.device)
         depth_model.freeze_network({'encoder', 'decoder'})

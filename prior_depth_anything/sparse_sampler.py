@@ -15,7 +15,7 @@ class SparseSampler:
         self.device = device
         self.min_depth = 0.0001 # We always filter out depth <= 0.
 
-    def __call__(self, image, prior, pattern=None, K=5, prior_cover=False) -> Dict[str, torch.Tensor]:
+    def __call__(self, image, prior, geometric=None, pattern=None, K=5, prior_cover=False) -> Dict[str, torch.Tensor]:
         """
         1. Handles the loading and preprocessing of image and prior depth data. 
         2. Samples sparse depth points based on the provided pattern or prior depth information.
@@ -25,7 +25,10 @@ class SparseSampler:
                 The path of the image (readable for Image.open()) or a tensor/array representing the image.
                 Shape should be [H, W, 3] with values in the range [0, 255].
             prior: 
-                The path of the prior depth (e.g., '*.png') or a tensor/array representing the depth.
+                The path of the prior depth (e.g., '*.png') or a tensor/array representing the prior depth.
+                Shape should be [H, W] with type float32.
+            geometric (optional): 
+                The path of the geometric depth (e.g., '*.png') or a tensor/array representing the geometric depth.
                 Shape should be [H, W] with type float32.
             pattern (optional): 
                 Pattern for sampling sparse depth points. If None, prior depth is used.
@@ -78,6 +81,23 @@ class SparseSampler:
         elif isinstance(prior, torch.Tensor):
             ts_prior = prior.cpu()
         data['prior_depth'] = ts_prior.unsqueeze(0).unsqueeze(0)
+        
+        # Load geometric depth.
+        if geometric is not None:
+            if isinstance(geometric, str):
+                if geometric.endswith('.npy'):
+                    np_geometric = np.load(geometric)
+                    ts_geometric = torch.from_numpy(np_geometric)
+                else:
+                    # The format should be compatible with Image.open
+                    pil_pgeometric = Image.open(geometric)
+                    np_geometric = np.asarray(pil_geometric).astype(np.float32)
+                    ts_geometric = torch.from_numpy(np_geometric.copy())
+            elif isinstance(geometric, np.ndarray):
+                ts_geometric = torch.from_numpy(np_geometric)
+            elif isinstance(geometric, torch.Tensor):
+                ts_geometric = geometric.cpu()
+            data['geometric_depth'] = ts_geometric.unsqueeze(0).unsqueeze(0)
         
         # Sample the points manually if `pattern` is provided, otherwise use prior.
         if pattern or ts_prior.shape[-2:] != ts_image.shape[-2:]:
