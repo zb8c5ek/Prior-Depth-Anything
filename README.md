@@ -21,7 +21,7 @@ This work presents Prior Depth Anything, a framework that combines incomplete bu
 ![comparison](assets/comparison.jpg)
 
 ## News
-- **2025-05-21:** We provide one more way to input your own geometric prior. (To minimize changes, we use "geometric" to represent the geometric prior in our code.)
+- **2025-05-21:** We provide one more way to input your own geometric prior. (To minimize code changes, we use "geometric" to represent the geometric prior.)
 - **2025-05-15:** We released [Paper](https://arxiv.org/pdf/2505.10565), [Project Page](https://prior-depth-anything.github.io/), [Code](https://github.com/SpatialVision/Prior-Depth-Anything) and [Models](https://huggingface.co/Rain729/Prior-Depth-Anything)
 
 ## Pretrained Models
@@ -51,7 +51,7 @@ pip install -e .
 ### Quick start:
 To run with CLI, you can just begin by following command (Installing `Prior-Depth-Anything` as a package is required.). On the initial execution, the [model weights](#Pretrained-Models) will be automatically downloaded from the Hugging Face Model Hub.
 ```bash
-# We sample on Ground-Truth depth map as scale prior.
+# We sample on Ground-Truth depth map as prior.
 priorda test --image_path assets/sample-1/rgb.jpg --prior_path assets/sample-1/gt_depth.png --pattern downscale_32 --visualize 1 
 ```
 
@@ -90,7 +90,7 @@ To facilitate further research, we offer an interface to the first-stage 'coarse
 ```python
 priorda = PriorDepthAnything(device=device, coarse_only=True)
 ```
-### Geometric prior
+### Geometric Depth
 We provide two ways that allow you utilize geometric information from other depth estimation models.  
 1. Replace the depth estimation model in the coarse stage [here](./prior_depth_anything/depth_completion.py#L165).
 2. Just input the geometric depth to `infer_one_sample()` by specify `geometric` (refer to [Inference Configurations](#inference-configurations)). With CLI, you should add the item `--geometric_path assets/sample-1/geo_depth.npy`. 
@@ -106,15 +106,15 @@ We provide two ways that allow you utilize geometric information from other dept
 
 #### &ensp;&ensp;Inference Configurations
 - `image`: Path to the input image.
-- `prior`: Path to the scale prior.
-- `geometric`: Path to the geometric prior estimated by depth estimation models.
-- `pattern`: Pattern to sample in the scale prior.
+- `prior`: Path to the prior.
+- `geometric`: Path to the geometric depth estimated by depth estimation models.
+- `pattern`: Pattern to sample in the prior.
 - `double_global(bool)`: Whether to use double globally-aligned conditions.
 - `visualize(bool)`: Whether to visualize the results.
 
 ## Usage2: Plugin
 
-`Prior-Depth-Anything` showcases remarkable zero-shot robustness in the presence of varied and potentially noisy scale prior inputs. It is engineered to function as a plug-and-play module for other depth estimation frameworks, boosting their performance. Integrating this module requires only a few lines of code, leading to improved depth estimation accuracy.
+`Prior-Depth-Anything` showcases remarkable zero-shot robustness in the presence of varied and potentially noisy prior inputs. It is engineered to function as a plug-and-play module for other depth estimation frameworks, boosting their performance. Integrating this module requires only a few lines of code, leading to improved depth estimation accuracy.
 ### Prepraration
 
 Set up the environment as in [prepraration](#prepraration).
