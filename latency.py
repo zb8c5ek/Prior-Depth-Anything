@@ -51,7 +51,7 @@ if __name__ == '__main__':
     priorda.timer = []
     priorda.completion.timer = []
     
-    pattern = "downscale_32"
+    pattern = "500"
     for img, dpt in zip(image_paths, depth_paths):
         data = priorda.sampler(
             image=img, prior=dpt,
