@@ -58,6 +58,7 @@ def world_coords_points_to_depth(
     return depth_map
 
 if __name__ == '__main__':
+    from matplotlib import pyplot as plt
     device = "cuda" if torch.cuda.is_available() else "cpu"
     # bfloat16 is supported on Ampere GPUs (Compute Capability 8.0+) 
     dtype = torch.bfloat16 if torch.cuda.get_device_capability()[0] >= 8 else torch.float16

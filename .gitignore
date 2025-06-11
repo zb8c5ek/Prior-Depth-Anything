@@ -5,3 +5,5 @@
 /prior_depth_anything/__pycache__
 /prior_depth_anything/__pycache__
 __pycache__
+/assets
+*.pyc
