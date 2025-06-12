@@ -117,6 +117,7 @@ if __name__ == '__main__':
     from pathlib import Path
     # DP_image_folder = Path("assets/sample-table")
     DP_image_folder = Path("assets/sample-bottle")
+    # DP_image_folder = Path("/d_disk/Desktop/DemoBottle/images-100")
     FPS_images = DP_image_folder.glob("*.png")
     image_names = sorted(FPS_images)
 
@@ -155,7 +156,8 @@ if __name__ == '__main__':
         ### Refine depth
         depth_map, depth_conf = predictions['depth'].squeeze()[idx], predictions['depth_conf'].squeeze()[idx]
         refined_depth, meview_depth_map = Refiner.predict(
-            image=priorda_image, depth_map=depth_map.squeeze(), confidence=depth_conf.squeeze())
+            image=priorda_image, depth_map=depth_map.squeeze(), confidence=depth_conf.squeeze()
+        )       # 1920 x 1080 Image takes 15.1GB GMem, which is suppose to be the maximum image size.
 
         # predictions['refined_depth'] = F.interpolate(
         #     refined_depth[None, None, ...], size=(depth_map.shape[-3], depth_map.shape[-2]),
@@ -165,25 +167,40 @@ if __name__ == '__main__':
         # raw_metrics, refined_metrics = Refiner.raw_refined_metrics(
         #     gt_depth=gt_depth, raw_depth=meview_depth_map, refined_depth=refined_depth
         # )
-        # TODO: add the depthmap to pointcloud util here.
-
+        pose_enc = predictions['pose_enc']
+        # extrinsic, intrinsic = pose_encoding_to_extri_intri(pose_enc, images.shape[-2:])
+        extrinsic, intrinsic = pose_encoding_to_extri_intri(
+            pose_enc,
+            image_size_hw=refined_depth.shape[-2:]
+        )
+        focal = (intrinsic[0, :, 0, 0] + intrinsic[0, :, 1, 1]).mean().cpu().numpy() / 2
+        pts, col = depth_map_to_3D_points(
+            refined_depth.squeeze().cpu().numpy(), priorda_image, focal
+        )
+        write_ply(
+            filename=f"output_{image_name.stem}.ply",
+            points=pts.reshape(-1, 3),
+            colors=col.reshape(-1, 3).astype(np.uint8)
+        )
+        # TODO: add extrinsics to output the point cloud, so that they can be stitched together.
         ### Refine point_map.
         # world_points, world_points_conf = predictions['world_points'], predictions['world_points_conf']
-        # pose_enc = predictions['pose_enc']
-        # extrinsic, intrinsic = pose_encoding_to_extri_intri(pose_enc, images.shape[-2:])
-        # depth_by_project = project_point_map_to_depth_map(
-        #     world_points.view(-1, 3).unsqueeze(0), extrinsics_cam=extrinsic.squeeze(0),
-        #     intrinsics_cam=intrinsic.squeeze(0), size=images.shape[-2:]
-        # )
-        #
-        # refined_projected, meview_depth_by_project = Refiner.predict(
-        #     image=priorda_image, depth_map=depth_by_project.squeeze(), confidence=world_points_conf.squeeze())
-        # inview_refined_projected = F.interpolate(
-        #     refined_projected[None, None, ...], size=(depth_map.shape[-3], depth_map.shape[-2]),
-        #     mode='bilinear', align_corners=True
-        # ).squeeze()
-        # refined_world_points = unproject_depth_map_to_point_map(
-        #     inview_refined_projected[None, ..., None], extrinsic.squeeze(0), intrinsic.squeeze(0))
-        # predictions['refined_points'] = refined_world_points
+    pose_enc = predictions['pose_enc'][0][idx]
+    # extrinsic, intrinsic = pose_encoding_to_extri_intri(pose_enc, images.shape[-2:])
+    extrinsic, intrinsic = pose_encoding_to_extri_intri(pose_enc, priorda_image.shape[-2:])
+    # depth_by_project = project_point_map_to_depth_map(
+    #     world_points.view(-1, 3).unsqueeze(0), extrinsics_cam=extrinsic.squeeze(0),
+    #     intrinsics_cam=intrinsic.squeeze(0), size=images.shape[-2:]
+    # )
+    #
+    # refined_projected, meview_depth_by_project = Refiner.predict(
+    #     image=priorda_image, depth_map=depth_by_project.squeeze(), confidence=world_points_conf.squeeze())
+    # inview_refined_projected = F.interpolate(
+    #     refined_depth[None, None, ...], size=(depth_map.shape[-3], depth_map.shape[-2]),
+    #     mode='bilinear', align_corners=True
+    # ).squeeze()
+    refined_world_points = unproject_depth_map_to_point_map(
+        refined_depth.squeeze(), extrinsic.squeeze(0), intrinsic.squeeze(0))
+    predictions['refined_points'] = refined_world_points
 
-
+        # TODO: Add the Point Map regarding the dense depth map.
